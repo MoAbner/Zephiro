@@ -1,17 +1,17 @@
-# Zephiro 🎯
+# Zephiro 
 
 Interface de controle embarcada para pipeline de visão computacional com YOLO.  
 Desenvolvida para rodar em hardware como **Jetson Orin NX**, com menu em arco, animação de CD e integração direta com câmera e modelo treinado.
 
 ---
 
-## 📸 Preview
+## Preview
 
 > Menu em arco de 180° com CD animado, seletor, painel de status e controle de inferência em tempo real.
 
 ---
 
-## 🗂️ Estrutura do projeto
+## Estrutura do projeto
 
 ```
 zephiro/
@@ -35,7 +35,7 @@ zephiro/
 
 ---
 
-## ⚙️ Requisitos
+## Requisitos
 
 - Python 3.10+
 - Câmera conectada (índice `0` por padrão)
@@ -56,7 +56,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🚀 Como rodar
+## Como rodar
 
 **1. Clone o repositório**
 ```bash
@@ -90,7 +90,7 @@ python server.py
 http://localhost:5000
 ```
 
-> ⚠️ Use **Ctrl + 0** no navegador para garantir zoom em 100% e layout correto.
+> Use **Ctrl + 0** no navegador para garantir zoom em 100% e layout correto.
 
 ---
 
@@ -105,7 +105,7 @@ http://localhost:5000
 
 ---
 
-## 🧠 Pipeline de inferência
+## Pipeline de inferência
 
 O `script_inferencia.py` realiza:
 
@@ -121,7 +121,7 @@ O `script_inferencia.py` realiza:
 
 ---
 
-## 🔌 API do servidor
+## API do servidor
 
 O `server.py` expõe três endpoints usados pela interface:
 
@@ -133,17 +133,17 @@ O `server.py` expõe três endpoints usados pela interface:
 
 ---
 
-## 🛠️ Personalização
+## Personalização
 
 ### Modelo YOLO
 ```python
 # script_inferencia.py
-model = YOLO("best.pt")  # troque pelo caminho do seu modelo
+model = YOLO("yolov8n.pt") 
 ```
 
 ### Câmera
 ```python
-cap = cv2.VideoCapture(0)  # troque 0 pelo índice da sua câmera
+cap = cv2.VideoCapture(0) 
 ```
 
 ### Confiança mínima
@@ -158,7 +158,7 @@ COOLDOWN = 4.0  # segundos entre alertas da mesma classe
 
 ---
 
-## 📦 Tecnologias
+## Tecnologias
 
 - **Frontend:** HTML5 · CSS3 · JavaScript vanilla · Rubik One (Google Fonts)
 - **Backend:** Python 3 · Flask
@@ -166,7 +166,3 @@ COOLDOWN = 4.0  # segundos entre alertas da mesma classe
 - **Áudio:** Pygame
 
 ---
-
-## 📄 Licença
-
-MIT — sinta-se livre para usar, modificar e distribuir.
