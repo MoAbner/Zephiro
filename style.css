@@ -1,0 +1,46 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Rubik+One&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+overflow:hidden;
+background:#111;
+font-family:'Rubik One',sans-serif;
+color:#fff;
+}
+.bg{
+position:fixed;inset:0;
+background:url('assets/bg-grid.png') center/cover no-repeat;
+}
+.cd{
+position:absolute;
+left:-180px;top:50%;
+transform:translateY(-50%);
+height:85vh;
+z-index:2;
+}
+.menu-wrapper{position:absolute;left:18%;top:18%;width:700px;z-index:3}
+.menu-item{
+position:absolute;
+font-size:4rem;
+transition:.45s cubic-bezier(.2,.8,.2,1);
+text-shadow:5px 5px 0 rgba(0,0,0,.45);
+}
+.selector{
+position:absolute;left:0;top:180px;width:620px;
+}
+.selector img{width:100%}
+.selector span{
+position:absolute;left:30px;top:8px;
+font-size:5.5rem;
+}
+.panel{
+position:absolute;
+right:10%;top:16%;
+width:520px;z-index:3;
+}
+.title{font-size:4.6rem;margin-bottom:15px}
+.line{width:220px;height:6px;background:linear-gradient(90deg,#ffd500,#ff2ea5);margin-bottom:25px}
+.text{font-size:1.1rem;line-height:1.4}
+.box{margin-top:20px;background:rgba(40,0,30,.45);border:1px solid rgba(255,255,255,.08)}
+.row{padding:18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.active{color:#66ff88}

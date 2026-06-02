@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zephiro</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+One&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  width:100vw; height:100vh; overflow:hidden;
+  background:#0e0e0e;
+  font-family:'Rubik One', 'Arial Black', sans-serif;
+  color:#fff;
+}
+
+/* ── FUNDO ── */
+.bg {
+  position:fixed; inset:0; z-index:0;
+  background: url('assets/bg-grid.png') center/cover no-repeat;
+}
+
+/* ── CD: metade fora da tela à esquerda ── */
+.cd {
+  position:absolute; z-index:2;
+  height:88vh;
+  left:0px; top:50%;
+  transform:translate(-50%, -50%);
+  pointer-events:none;
+  filter: drop-shadow(0 0 40px rgba(0,0,0,0.7));
+}
+
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.cd.spinning {
+  animation: spin 8s linear infinite;
+}
+.selector-wrap {
+  position:absolute; z-index:10;
+  pointer-events:none;
+  /* posicionado via JS */
+}
+.selector-wrap img {
+  width:100%; height:auto;
+  display:block;
+}
+.selector-label {
+  position:absolute;
+  left: 120px; top: 50%;
+  transform: translateY(-52%) rotate(-10deg);
+  font-family:'Rubik One', sans-serif;
+  font-size: 4.2rem;
+  color: #fff;
+  text-shadow: 3px 3px 0 rgba(0,0,0,.5);
+  white-space: nowrap;
+  letter-spacing: .5px;
+}
+
+/* ── ITENS DO ARCO ── */
+#arc { position:absolute; inset:0; z-index:5; }
+
+.item {
+  position:absolute;
+  transform: translate(-50%, -50%);
+  cursor:pointer;
+  transition:
+    left    .5s cubic-bezier(.23,1,.32,1),
+    top     .5s cubic-bezier(.23,1,.32,1),
+    transform .5s cubic-bezier(.23,1,.32,1),
+    opacity .4s ease;
+  user-select:none;
+}
+.item-label {
+  font-family:'Rubik One', sans-serif;
+  font-size: 2.4rem;
+  color: rgba(255,255,255,.32);
+  text-shadow: 2px 3px 10px rgba(0,0,0,.8);
+  white-space:nowrap; line-height:1;
+  transition: font-size .45s cubic-bezier(.23,1,.32,1), color .35s, opacity .35s;
+}
+/* próximos ao selecionado */
+.item[data-dist="1"] .item-label { font-size:2.8rem; color:rgba(255,255,255,.68); }
+.item[data-dist="2"] .item-label { font-size:2.2rem; color:rgba(255,255,255,.32); }
+.item.hidden { opacity:0!important; pointer-events:none; }
+
+/* ── PAINEL DIREITO ── */
+.panel {
+  position:absolute; right:6%; top:50%;
+  transform:translateY(-50%);
+  width:34%; z-index:10;
+}
+.p-title {
+  font-size: clamp(2.4rem, 4.2vw, 4.4rem);
+  line-height:.9; letter-spacing:-1.5px;
+  text-transform:uppercase; margin-bottom:20px;
+  transition:opacity .25s;
+}
+.p-line {
+  width:160px; height:5px;
+  background:linear-gradient(90deg,#ffd500,#ff2ea5);
+  margin-bottom:22px; border-radius:3px;
+}
+.p-text {
+  font-family: Arial, sans-serif;
+  font-size:.95rem; line-height:1.55;
+  color:rgba(255,255,255,.7);
+  margin-bottom:22px;
+  transition:opacity .25s;
+}
+.p-box {
+  background:rgba(40,0,30,.45);
+  border:1px solid rgba(255,255,255,.08);
+  margin-bottom:28px;
+}
+.p-row {
+  padding:14px 18px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  font-family:Arial,sans-serif;
+  font-size:.8rem; letter-spacing:1.5px;
+  text-transform:uppercase;
+  display:flex; justify-content:space-between; align-items:center;
+  color:rgba(255,255,255,.35);
+}
+.p-row.on { color:#66ff88; }
+.p-row.warn { color:#ffd500; }
+.p-row.idle { color:rgba(255,255,255,.25); }
+.p-row.act  { color:#ff66cc; }
+.p-btn {
+  display:inline-block; padding:12px 24px;
+  border:2px solid rgba(255,80,80,.6);
+  font-family:'Rubik One',sans-serif; font-size:.7rem;
+  letter-spacing:2px; text-transform:uppercase;
+  background:rgba(120,10,10,.35); cursor:pointer;
+  transition:background .2s, border-color .2s; pointer-events:all;
+}
+.p-btn:hover { background:rgba(200,30,30,.5); border-color:#ff5555; }
+
+#nav-hint {
+  position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+  color:rgba(255,255,255,.15); font-family:Arial,sans-serif;
+  font-size:10px; letter-spacing:2px; text-transform:uppercase; z-index:20;
+}
+#btn-iniciar {
+  margin-top: 20px;
+  padding: 14px 28px;
+  background: rgba(120,10,10,.35);
+  border: 2px solid rgba(255,80,80,.6);
+  color: white;
+  font-family: 'Rubik One', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.cd.spinning {
+  animation: spin 8s linear infinite;
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<img class="cd" src="assets/CD.png" alt="CD">
+
+<!-- seletor com label do item ativo -->
+<div class="selector-wrap" id="selector-wrap">
+  <img src="assets/selector.png" alt="">
+  <span class="selector-label" id="selector-label"></span>
+</div>
+
+<div id="arc" role="menu"></div>
+
+<div class="panel" id="panel"></div>
+
+<div id="nav-hint">↑ ↓ &nbsp; scroll · swipe</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   CONFIGURAÇÃO DO ARCO
+   ═══════════════════════════════════════════ */
+const CFG = {
+  /* Centro do CD — ajuste se o CD mudar de tamanho.
+     O CD tem height=88vh e está em left=0, transform translate(-50%).
+     Então o centro X ≈ 0, Y = 50vh.                                */
+  getCdCenter() {
+    const vh = window.innerHeight;
+    return { cx: 0, cy: vh * 0.50 };
+  },
+  radius:    420,   // px do centro do CD até os itens
+  selAngle:  -8,    // ângulo do seletor (graus) — 0=horizontal, neg=acima
+  spacing:   20,    // graus entre cada item
+  visRange:  55,    // itens fora deste alcance angular somem
+};
+
+//teste:
+async function toggleCD() {
+  const cd  = document.querySelector('.cd');
+  const btn = document.getElementById('btn-iniciar');
+  cdAtivo = !cdAtivo;
+  cd.classList.toggle('spinning', cdAtivo);
+  if (btn) btn.textContent = cdAtivo ? 'PARAR INFERÊNCIA' : 'INICIAR INFERÊNCIA';
+
+  try {
+    await fetch(cdAtivo ? '/start' : '/stop', { method: 'POST' });
+  } catch(e) {
+    console.warn('Servidor não disponível');
+  }
+}
+
+async function pararInferencia() {
+  if (cdAtivo) {
+    cdAtivo = false;
+    document.querySelector('.cd').classList.remove('spinning');
+  }
+  try { await fetch('/stop', { method: 'POST' }); } catch(e) {}
+}
+//
+
+/* ═══════════════════════════════════════════
+   CONTEÚDO DAS PÁGINAS
+   ═══════════════════════════════════════════ */
+const ITEMS = [
+  {
+    label: 'Iniciar',
+    title: 'INICIAR\nINFERÊNCIA',
+    text:  'Ativa o pipeline de visão computacional embarcada.\nCâmera, modelos de IA e transmissão em tempo real.',
+    btn:   'INICIAR INFERÊNCIA',
+    rows: [
+      { cls:'warn', left:'● CÂMERA',        right:'ONLINE' },
+      { cls:'on',   left:'● GPU EMBARCADA', right:'PRONTA' },
+      { cls:'idle', left:'○ INFERÊNCIA IA', right:'AGUARDANDO' },
+      { cls:'act',  left:'● CONEXÃO IOT',   right:'ATIVO' },
+    ],
+  },
+  {
+    label: 'Specs',
+    title: 'ESPECIFI-\nCAÇÕES',
+    text:  'Hardware: Jetson Orin NX 16 GB\nModelo: YOLOv8-nano  ·  Câmera: IMX219\nLatência média: 18 ms',
+    btn:   'VER DETALHES',
+    rows: [
+      { cls:'on',  left:'CPU', right:'6-core ARM' },
+      { cls:'on',  left:'GPU', right:'1024 CUDA cores' },
+      { cls:'act', left:'RAM', right:'16 GB LPDDR5' },
+    ],
+  },
+  {
+    label: 'Status',
+    title: 'STATUS\nDO SISTEMA',
+    text:  'Monitoramento em tempo real — informar as saídas no terminal.',
+    btn:   'ATUALIZAR',
+    rows: [
+      { cls:'on',   left:'TEMPERATURA', right:'47°C' },
+      { cls:'warn', left:'CPU LOAD',    right:'38%' },
+      { cls:'idle', left:'GPU LOAD',    right:'12%' },
+      { cls:'act',  left:'DISCO LIVRE', right:'14.2 GB' },
+    ],
+  },
+  {
+    label: 'Sair',
+    title: 'ENCERRAR\nSISTEMA',
+    text:  'Finaliza todos os processos e desliga o pipeline com segurança.',
+    btn:   'CONFIRMAR SAÍDA',
+    rows: [
+      { cls:'idle', left:'PIPELINE', right:'PARADO' },
+      { cls:'idle', left:'CÂMERA',   right:'OFFLINE' },
+    ],
+  },
+];
+
+/* ═══════════════════════════════════════════
+   ESTADO
+   ═══════════════════════════════════════════ */
+let sel = 0;
+let cdAtivo = false;
+const N = ITEMS.length;
+
+async function toggleCD() {
+  const cd  = document.querySelector('.cd');
+  const btn = document.getElementById('btn-iniciar');
+  cdAtivo = !cdAtivo;
+  cd.classList.toggle('spinning', cdAtivo);
+  if (btn) btn.textContent = cdAtivo ? 'PARAR INFERÊNCIA' : 'INICIAR INFERÊNCIA';
+
+  // chama o servidor Flask para iniciar ou parar o script Python
+  try {
+    await fetch(cdAtivo ? '/start' : '/stop', { method: 'POST' });
+  } catch(e) {
+    console.warn('[Zephiro] Servidor não disponível. Rode server.py primeiro.');
+  }
+}
+
+// chamado pelo botão "CONFIRMAR SAÍDA"
+async function pararInferencia() {
+  if (cdAtivo) {
+    cdAtivo = false;
+    document.querySelector('.cd').classList.remove('spinning');
+  }
+  try {
+    await fetch('/stop', { method: 'POST' });
+  } catch(e) {
+    console.warn('[Zephiro] Servidor não disponível.');
+  }
+}
+
+/* ═══════════════════════════════════════════
+   GEOMETRIA
+   ═══════════════════════════════════════════ */
+function arcXY(deg) {
+  const { cx, cy } = CFG.getCdCenter();
+  const r = deg * Math.PI / 180;
+  return { x: cx + CFG.radius * Math.cos(r), y: cy + CFG.radius * Math.sin(r) };
+}
+
+function itemAngle(i) {
+  return CFG.selAngle + (i - sel) * CFG.spacing;
+}
+
+/* ═══════════════════════════════════════════
+   BUILD
+   ═══════════════════════════════════════════ */
+function buildItems() {
+  const arc = document.getElementById('arc');
+  arc.innerHTML = '';
+  ITEMS.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.dataset.idx = i;
+    el.setAttribute('role', 'menuitem');
+    el.innerHTML = `<div class="item-label">${item.label}</div>`;
+    el.addEventListener('click', () => nav(i));
+    arc.appendChild(el);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   UPDATE
+   ═══════════════════════════════════════════ */
+function updateItems() {
+  document.querySelectorAll('.item').forEach(el => {
+    const i    = +el.dataset.idx;
+    const deg  = itemAngle(i);
+    const dist = Math.abs(i - sel);
+    const { x, y } = arcXY(deg);
+
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    // inclinação suave seguindo o arco
+    el.style.transform = `translate(-50%,-50%) rotate(${deg * 0.55}deg)`;
+
+    el.dataset.dist = dist;
+    el.classList.toggle('hidden', Math.abs(deg - CFG.selAngle) > CFG.visRange);
+    el.setAttribute('aria-selected', i === sel);
+
+    // ocultar o item ativo da lista (fica só no seletor)
+    el.style.opacity = i === sel ? '0' : '';
+  });
+}
+
+function updateSelector() {
+  // posicionar o seletor no ponto do arco onde o item ativo estaria
+  const { x, y } = arcXY(CFG.selAngle);
+  const wrap = document.getElementById('selector-wrap');
+  const img  = wrap.querySelector('img');
+
+  // largura do seletor: usamos a imagem real; limitamos por viewport
+  const W = 790;
+  const H = img.naturalHeight ? (W / img.naturalWidth) * img.naturalHeight : 110;
+
+  wrap.style.cssText =
+    `left:${x- 120}px; top:${y -30}px;` +
+    `width:${W}px;` +
+    `transform: translateY(-50%) rotate(${CFG.selAngle * (-0.15)}deg);` +
+    `transform-origin: left center;`;
+
+  document.getElementById('selector-label').textContent = ITEMS[sel].label;
+}
+
+function updatePanel() {
+  const item = ITEMS[sel];
+  const panel = document.getElementById('panel');
+
+  const rows = item.rows.map(r =>
+    `<div class="p-row ${r.cls}"><span>${r.left}</span><span>${r.right}</span></div>`
+  ).join('');
+
+  panel.style.opacity = '0';
+  panel.style.transition = 'opacity .25s';
+  setTimeout(() => {
+    const isIniciar = sel === 0;
+    const isSair    = sel === 3;
+    const btnId     = isIniciar ? `id="btn-iniciar"` : '';
+    const btnClick  = isIniciar ? `onclick="toggleCD()"`
+                    : isSair    ? `onclick="pararInferencia()"` : '';
+    panel.innerHTML = `
+      <div class="p-title">${item.title.replace('\n','<br>')}</div>
+      <div class="p-line"></div>
+      <div class="p-text">${item.text.replace(/\n/g,'<br>')}</div>
+      <div class="p-box">${rows}</div>
+      <div class="p-btn" ${btnId} ${btnClick}>${isIniciar && cdAtivo ? 'PARAR INFERÊNCIA' : item.btn}</div>`;
+    panel.style.opacity = '1';
+  }, 200);
+}
+
+function render() {
+  updateItems();
+  requestAnimationFrame(updateSelector);
+  updatePanel();
+}
+
+/* ═══════════════════════════════════════════
+   NAVEGAÇÃO — SEM LOOP
+   ═══════════════════════════════════════════ */
+function nav(to) {
+  const next = Math.max(0, Math.min(N - 1, to));
+  if (next === sel) return;
+  sel = next;
+  render();
+}
+
+/* teclado */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); nav(sel + 1); }
+  if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  { e.preventDefault(); nav(sel - 1); }
+});
+/* scroll */
+let wl = false;
+document.addEventListener('wheel', e => {
+  if (wl) return; wl = true; setTimeout(() => wl = false, 380);
+  nav(sel + (e.deltaY > 0 ? 1 : -1));
+}, { passive: true });
+/* swipe */
+let ty = 0;
+document.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend',   e => {
+  const d = ty - e.changedTouches[0].clientY;
+  if (Math.abs(d) > 28) nav(sel + (d > 0 ? 1 : -1));
+}, { passive: true });
+
+window.addEventListener('resize', render);
+
+/* aguarda a imagem do seletor carregar para dimensionar corretamente */
+const selImg = document.querySelector('.selector-wrap img');
+if (selImg.complete) { buildItems(); render(); }
+else { selImg.onload = () => { buildItems(); render(); }; }
+</script>
+</body>
+</html>
