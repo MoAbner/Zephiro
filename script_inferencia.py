@@ -9,7 +9,6 @@ import os
 
 pygame.mixer.init()
 
-# Mapeia cada frase para um arquivo de áudio gravado por você
 AUDIOS = {
     "pessoa muito perto":       "audios/Pessoa_muito_perto.wav",
     "pessoa se aproximando":    "audios/Pessoa_se_aproximando.wav",
@@ -17,7 +16,6 @@ AUDIOS = {
     "carro muito perto":        "audios/Carro_muito_perto.wav",
     "carro se aproximando":     "audios/Carro_se_aproximando.wav",
     "carro":                    "audios/Carro_distante.wav",
-    # adicione para cada classe e nível
 }
 
 fila_fala = queue.Queue()
@@ -107,7 +105,7 @@ COR_NIVEL = {
 }
 
 # --- Loop principal ---
-model = YOLO("yolov8n.pt")  # se estiver na mesma pasta
+model = YOLO("yolov8n.pt")  
 cap   = cv2.VideoCapture(0)
 
 
