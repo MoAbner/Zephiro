@@ -1,7 +1,7 @@
 # Zephiro 
 
 Interface de controle embarcada para pipeline de visão computacional com YOLO.  
-Desenvolvida para rodar em hardware como **Jetson Orin NX**, com menu em arco, animação de CD e integração direta com câmera e modelo treinado.
+Desenvolvido com integração direta com câmera e modelo treinado.
 
 ---
 
